@@ -1,0 +1,58 @@
+# Producción en una EC2. Se usa junto al archivo base (no con el override de desarrollo):
+#
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# Solo Caddy publica puertos (80 y 443). PostgreSQL y los servicios quedan en la red
+# interna de Docker. Requiere el .env de la raíz con DOMINIO y POSTGRES_PASSWORD.
+
+x-reinicio: &reinicio
+  # Si la instancia se reinicia, los contenedores vuelven a levantarse solos.
+  restart: unless-stopped
+
+services:
+  postgres:
+    <<: *reinicio
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD en el .env de la raíz}
+
+  auth-service:
+    <<: *reinicio
+    environment:
+      NODE_ENV: production
+      FRONTEND_URL: https://${DOMINIO:?Defina DOMINIO en el .env de la raíz}
+      # Con HTTPS la cookie de sesión solo viaja cifrada.
+      COOKIE_SECURE: "true"
+      COOKIE_SAMESITE: lax
+      # Caddy y nginx van delante del servicio: hay que saltar dos proxies para
+      # ver la IP real del cliente (la usa el límite de intentos de login).
+      TRUST_PROXY_SALTOS: "2"
+
+  feria-service:
+    <<: *reinicio
+    environment:
+      NODE_ENV: production
+      TRUST_PROXY_SALTOS: "2"
+
+  frontend:
+    <<: *reinicio
+
+  # Entrada pública: obtiene y renueva el certificado HTTPS de Let's Encrypt
+  # y reenvía todo al nginx del frontend.
+  caddy:
+    <<: *reinicio
+    image: caddy:2-alpine
+    environment:
+      DOMINIO: ${DOMINIO}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data # certificados: deben sobrevivir a los reinicios
+      - caddy_config:/config
+    depends_on:
+      - frontend
+
+volumes:
+  caddy_data:
+  caddy_config:

@@ -11,8 +11,9 @@ import { authRoutes } from './routes/auth.routes';
 
 export const app = express();
 
-// Detrás del balanceador de AWS, para que el rate limit vea la IP real del cliente.
-app.set('trust proxy', 1);
+// Detrás de proxies (nginx, Caddy), para que el límite de intentos vea la IP real del cliente
+// y no la del proxy: si no, todos los visitantes compartirían el mismo límite.
+app.set('trust proxy', env.TRUST_PROXY_SALTOS);
 
 app.use(helmet());
 app.use(cors({ origin: env.FRONTEND_URL, credentials: true }));

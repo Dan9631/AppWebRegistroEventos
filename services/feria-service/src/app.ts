@@ -1,6 +1,7 @@
 import express from 'express';
 import helmet from 'helmet';
 import swaggerUi from 'swagger-ui-express';
+import { env } from './config/env';
 import { prisma } from './config/prisma';
 import { openApiDocument } from './docs/openapi';
 import { manejadorErrores, rutaNoEncontrada } from './middlewares/error.middleware';
@@ -8,7 +9,8 @@ import { feriaRoutes } from './routes/feria.routes';
 
 export const app = express();
 
-app.set('trust proxy', 1);
+// Detrás de proxies (nginx, Caddy): para que req.ip sea la IP real del cliente.
+app.set('trust proxy', env.TRUST_PROXY_SALTOS);
 
 // Sin CORS: el frontend llama a la API desde el mismo origen (proxy de Vite, nginx o balanceador).
 app.use(helmet());
