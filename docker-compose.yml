@@ -1,0 +1,38 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: disagro
+      POSTGRES_PASSWORD: disagro
+      POSTGRES_DB: disagro
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U disagro -d disagro"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  auth-service:
+    build: ./services/auth-service
+    env_file: ./services/auth-service/.env
+    environment:
+      # Dentro de la red de Docker la base se llama "postgres", no "localhost"
+      DATABASE_URL: postgresql://disagro:disagro@postgres:5432/disagro?schema=auth
+      NODE_ENV: development
+    ports:
+      - "4001:4001"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4001/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:

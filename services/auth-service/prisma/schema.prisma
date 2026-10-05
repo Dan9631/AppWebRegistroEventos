@@ -1,0 +1,65 @@
+// Esquema del servicio de autenticación.
+// La URL de conexión incluye ?schema=auth para aislar sus tablas del resto de servicios.
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model TipoUsuario {
+  id          Int       @id @default(autoincrement())
+  codigo      String    @unique @db.VarChar(30)
+  nombre      String    @db.VarChar(100)
+  descripcion String?
+  usuarios    Usuario[]
+
+  @@map("tipo_usuario")
+}
+
+model Usuario {
+  id                Int                 @id @default(autoincrement())
+  tipoUsuarioId     Int                 @map("tipo_usuario_id")
+  email             String              @db.VarChar(255)
+  passwordHash      String              @map("password_hash") @db.VarChar(255)
+  nombre            String              @db.VarChar(100)
+  apellidos         String              @db.VarChar(100)
+  emailVerificadoEn DateTime?           @map("email_verificado_en") @db.Timestamptz(6)
+  activo            Boolean             @default(true)
+  creadoEn          DateTime            @default(now()) @map("creado_en") @db.Timestamptz(6)
+  tipoUsuario       TipoUsuario         @relation(fields: [tipoUsuarioId], references: [id])
+  tokensVerificacion TokenVerificacion[]
+  refreshTokens     RefreshToken[]
+
+  // El índice único sobre lower(email) se crea en la migración SQL;
+  // el servicio además normaliza el email a minúsculas antes de guardarlo.
+  @@map("usuario")
+}
+
+model TokenVerificacion {
+  id        Int       @id @default(autoincrement())
+  usuarioId Int       @map("usuario_id")
+  tokenHash String    @unique @map("token_hash") @db.Char(64)
+  expiraEn  DateTime  @map("expira_en") @db.Timestamptz(6)
+  usadoEn   DateTime? @map("usado_en") @db.Timestamptz(6)
+  usuario   Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@map("token_verificacion")
+}
+
+model RefreshToken {
+  id         Int       @id @default(autoincrement())
+  usuarioId  Int       @map("usuario_id")
+  tokenHash  String    @unique @map("token_hash") @db.Char(64)
+  expiraEn   DateTime  @map("expira_en") @db.Timestamptz(6)
+  revocadoEn DateTime? @map("revocado_en") @db.Timestamptz(6)
+  usuario    Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@map("refresh_token")
+}
