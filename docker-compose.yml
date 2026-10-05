@@ -1,12 +1,20 @@
+# Configuración común a desarrollo y producción.
+#
+#   Desarrollo:  docker compose up -d
+#                (Compose agrega solo docker-compose.override.yml: puertos y valores locales)
+#   Producción:  docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#                (ver docs/despliegue-ec2.md)
+#
+# Aquí no se publica ningún puerto: cada entorno decide qué expone.
+
 services:
   postgres:
     image: postgres:16-alpine
     environment:
       POSTGRES_USER: disagro
-      POSTGRES_PASSWORD: disagro
+      # En producción se define en el .env de la raíz; en desarrollo vale "disagro".
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-disagro}
       POSTGRES_DB: disagro
-    ports:
-      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -20,12 +28,7 @@ services:
     env_file: ./services/auth-service/.env
     environment:
       # Dentro de la red de Docker la base se llama "postgres", no "localhost"
-      DATABASE_URL: postgresql://disagro:disagro@postgres:5432/disagro?schema=auth
-      NODE_ENV: development
-      # Los enlaces de verificación apuntan al frontend dockerizado
-      FRONTEND_URL: http://localhost:8080
-    ports:
-      - "4001:4001"
+      DATABASE_URL: postgresql://disagro:${POSTGRES_PASSWORD:-disagro}@postgres:5432/disagro?schema=auth
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:4001/health"]
       interval: 10s
@@ -40,10 +43,7 @@ services:
     build: ./services/feria-service
     env_file: ./services/feria-service/.env
     environment:
-      DATABASE_URL: postgresql://disagro:disagro@postgres:5432/disagro?schema=feria
-      NODE_ENV: development
-    ports:
-      - "4002:4002"
+      DATABASE_URL: postgresql://disagro:${POSTGRES_PASSWORD:-disagro}@postgres:5432/disagro?schema=feria
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:4002/health"]
       interval: 10s
@@ -56,8 +56,6 @@ services:
 
   frontend:
     build: ./frontend
-    ports:
-      - "8080:80"
     depends_on:
       auth-service:
         condition: service_healthy

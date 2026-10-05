@@ -1,0 +1,16 @@
+# Caddy obtiene el certificado de Let's Encrypt para DOMINIO, lo renueva solo
+# y redirige HTTP a HTTPS. Con sslip.io, DOMINIO es la IP con guiones:
+# 3.15.20.40 → 3-15-20-40.sslip.io
+{$DOMINIO} {
+	encode zstd gzip
+
+	header {
+		# Solo HTTPS durante un año en este dominio
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	reverse_proxy frontend:80
+}

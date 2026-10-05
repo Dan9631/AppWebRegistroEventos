@@ -1,0 +1,25 @@
+# Desarrollo local. Compose carga este archivo automáticamente con "docker compose up".
+# Publica todos los puertos para poder probar cada servicio por separado.
+
+services:
+  postgres:
+    ports:
+      - "5432:5432"
+
+  auth-service:
+    environment:
+      NODE_ENV: development
+      # Los enlaces de verificación apuntan al frontend dockerizado
+      FRONTEND_URL: http://localhost:8080
+    ports:
+      - "4001:4001"
+
+  feria-service:
+    environment:
+      NODE_ENV: development
+    ports:
+      - "4002:4002"
+
+  frontend:
+    ports:
+      - "8080:80"

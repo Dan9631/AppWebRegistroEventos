@@ -10,6 +10,9 @@ const pemBase64 = z
 const esquema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(4001),
+  // Cuántos proxies hay delante del servicio (nginx en desarrollo; Caddy + nginx en la EC2).
+  // Express los salta para encontrar la IP real del cliente.
+  TRUST_PROXY_SALTOS: z.coerce.number().int().min(0).default(1),
   DATABASE_URL: z.string().min(1),
   FRONTEND_URL: z.url(),
 
