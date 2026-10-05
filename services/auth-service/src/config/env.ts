@@ -25,6 +25,15 @@ const esquema = z.object({
   COOKIE_SECURE: z.stringbool().default(false),
   COOKIE_SAMESITE: z.enum(['lax', 'strict', 'none']).default('lax'),
 
+  // Correo. Se usa Gmail si están sus dos variables; si no, Resend; si no hay ninguno,
+  // el enlace de verificación solo se escribe en el log.
+  GMAIL_USER: z.string().trim().optional(),
+  // Contraseña de aplicación de Google (16 caracteres). Se aceptan los espacios con que la muestra Google.
+  GMAIL_APP_PASSWORD: z
+    .string()
+    .optional()
+    .transform((valor) => valor?.replace(/\s/g, '') || undefined),
+  EMAIL_NOMBRE_REMITENTE: z.string().default('Disagro · Feria de Promociones'),
   RESEND_API_KEY: z.string().optional(),
   EMAIL_FROM: z.string().default('Disagro <onboarding@resend.dev>'),
 });
