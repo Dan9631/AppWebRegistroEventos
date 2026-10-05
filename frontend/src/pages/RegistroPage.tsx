@@ -76,12 +76,13 @@ export function RegistroPage() {
           </div>
           <h1 className="tarjeta__titulo">Revisa tu correo</h1>
           <p className="tarjeta__subtitulo">
-            Enviamos un enlace de confirmación a <strong>{registrado}</strong>. Ábrelo para activar tu cuenta.
+            Enviamos un enlace de confirmación a <strong>{registrado}</strong>. Ya puedes iniciar sesión y explorar la
+            feria; para confirmar tu asistencia primero debes abrir ese enlace.
           </p>
+          <Link to="/login" className="boton boton--primario boton--bloque">
+            <span>Iniciar sesión</span>
+          </Link>
           <ReenviarCorreo email={registrado} />
-          <p className="tarjeta__pie">
-            ¿Ya confirmaste? <Link to="/login">Inicia sesión</Link>
-          </p>
         </section>
       </div>
     );

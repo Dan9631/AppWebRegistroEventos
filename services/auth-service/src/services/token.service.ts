@@ -9,6 +9,7 @@ export interface AccessTokenPayload {
   sub: string; // id del usuario
   tipo: string; // código del tipo de usuario, p. ej. 'CLIENTE'
   email: string;
+  emailVerificado: boolean;
 }
 
 export const tokenService = {

@@ -119,7 +119,7 @@ export const openApiDocument = {
         tags: ['Confirmación'],
         summary: 'Confirmar asistencia',
         description:
-          'Registra la fecha y hora de visita y los servicios/productos de interés. Los precios se toman de la base de datos y el descuento se calcula en el servidor.',
+          'Registra la fecha y hora de visita y los servicios/productos de interés. Requiere el correo confirmado (`emailVerificado` en el token). Los precios se toman de la base de datos y el descuento se calcula en el servidor.',
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
@@ -141,7 +141,11 @@ export const openApiDocument = {
             'ITEM_NO_DISPONIBLE',
           ),
           401: errorSesion,
-          403: errorTipo,
+          403: respuestaError(
+            'Sin permiso o correo sin confirmar',
+            'EMAIL_NO_VERIFICADO',
+            'SIN_PERMISO',
+          ),
           404: errorSinEvento,
           409: respuestaError('El cliente ya confirmó su asistencia', 'YA_CONFIRMADO'),
         },

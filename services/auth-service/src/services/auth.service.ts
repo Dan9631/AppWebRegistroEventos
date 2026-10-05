@@ -55,12 +55,19 @@ async function enviarNuevoTokenVerificacion(usuario: UsuarioConTipo): Promise<vo
   await emailService.enviarVerificacion(usuario, token);
 }
 
-async function crearSesion(usuario: UsuarioConTipo): Promise<Sesion> {
-  const accessToken = tokenService.firmarAccessToken({
+// El estado del correo viaja en el token: los demás servicios deciden con él
+// qué acciones permitir a una cuenta sin confirmar.
+function firmarAccessToken(usuario: UsuarioConTipo): string {
+  return tokenService.firmarAccessToken({
     sub: String(usuario.id),
     tipo: usuario.tipoUsuario.codigo,
     email: usuario.email,
+    emailVerificado: usuario.emailVerificadoEn !== null,
   });
+}
+
+async function crearSesion(usuario: UsuarioConTipo): Promise<Sesion> {
+  const accessToken = firmarAccessToken(usuario);
   const refresh = await tokenService.emitirRefreshToken(usuario.id);
 
   return {
@@ -133,10 +140,9 @@ export const authService = {
     if (!usuario.activo) {
       throw new AppError(403, 'USUARIO_INACTIVO', 'La cuenta está deshabilitada');
     }
-    if (!usuario.emailVerificadoEn) {
-      throw new AppError(403, 'EMAIL_NO_VERIFICADO', 'Debe confirmar su correo antes de iniciar sesión');
-    }
 
+    // Una cuenta sin confirmar puede iniciar sesión; el token indica emailVerificado: false
+    // y cada servicio restringe lo que corresponda (p. ej. confirmar asistencia).
     return crearSesion(usuario);
   },
 
@@ -150,11 +156,8 @@ export const authService = {
     }
 
     return {
-      accessToken: tokenService.firmarAccessToken({
-        sub: String(usuario.id),
-        tipo: usuario.tipoUsuario.codigo,
-        email: usuario.email,
-      }),
+      // Se vuelve a leer el usuario: si confirmó su correo, el nuevo token ya lo refleja.
+      accessToken: firmarAccessToken(usuario),
       refreshToken: rotado.token,
       refreshExpiraEn: rotado.expiraEn,
       usuario: aPublico(usuario),

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, Outlet, useNavigate } from 'react-router';
 import { useAuth } from '../auth/AuthContext';
 import { useEvento } from '../hooks/useEvento';
+import { AvisoVerificacion } from './AvisoVerificacion';
 
 export function Layout() {
   const { estado, usuario, logout } = useAuth();
@@ -46,6 +47,8 @@ export function Layout() {
           )}
         </div>
       </header>
+
+      {estado === 'autenticado' && <AvisoVerificacion />}
 
       <main className="principal">
         <Outlet />

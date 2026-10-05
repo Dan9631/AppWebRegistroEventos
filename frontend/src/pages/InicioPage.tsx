@@ -96,7 +96,7 @@ function FormularioConfirmacion({
   onConfirmado: (confirmacion: Confirmacion) => void;
   onRecargar: () => void;
 }) {
-  const { usuario } = useAuth();
+  const { usuario, actualizarSesion } = useAuth();
   const [dia, setDia] = useState('');
   const [horario, setHorario] = useState('');
   const [seleccionados, setSeleccionados] = useState<Set<number>>(new Set());
@@ -148,6 +148,11 @@ function FormularioConfirmacion({
     } catch (error) {
       if (!(error instanceof ApiError)) {
         setErrorGeneral('No se pudo confirmar la asistencia');
+      } else if (error.codigo === 'EMAIL_NO_VERIFICADO') {
+        // El token no estaba al día o el correo sigue sin confirmar: se revisa la cuenta.
+        const actualizado = await actualizarSesion();
+        if (!actualizado?.emailVerificado) setErrorGeneral(error.message);
+        else setErrorGeneral('Tu correo ya está confirmado. Presiona de nuevo "Confirmar asistencia".');
       } else if (error.codigo === 'YA_CONFIRMADO') {
         onRecargar(); // ya existe: se muestra su portafolio
       } else if (['FECHA_FUERA_DE_RANGO', 'FUERA_DE_HORARIO', 'FECHA_PASADA'].includes(error.codigo)) {
@@ -234,7 +239,16 @@ function FormularioConfirmacion({
             {ahorro > 0 && <span className="portafolio__ahorro"> · Ahorras {quetzales(ahorro)}</span>}
           </p>
         )}
-        <Boton onClick={confirmar} cargando={enviando} textoCargando="Confirmando..." conFlecha>
+        {!usuario.emailVerificado && (
+          <p className="feria__bloqueo">Confirma tu correo para habilitar la confirmación de asistencia.</p>
+        )}
+        <Boton
+          onClick={confirmar}
+          cargando={enviando}
+          textoCargando="Confirmando..."
+          conFlecha
+          disabled={!usuario.emailVerificado}
+        >
           Confirmar asistencia
         </Boton>
       </div>

@@ -6,7 +6,6 @@ import { Alerta } from '../components/Alerta';
 import { Boton } from '../components/Boton';
 import { Campo, CampoPassword } from '../components/Campo';
 import { PanelAuth } from '../components/PanelAuth';
-import { ReenviarCorreo } from '../components/ReenviarCorreo';
 import { limpiarErrores, requerido, validarEmail } from '../utils/validacion';
 
 export function LoginPage() {
@@ -46,17 +45,8 @@ export function LoginPage() {
 
   return (
     <PanelAuth titulo="Iniciar sesión" subtitulo="Ingresa para confirmar tu asistencia a la feria.">
-      {errorGeneral?.codigo === 'EMAIL_NO_VERIFICADO' ? (
-        <Alerta
-          tipo="info"
-          titulo="Confirma tu correo"
-          accion={<ReenviarCorreo email={email.trim()} variante="texto" />}
-        >
-          Te enviamos un enlace a <strong>{email.trim()}</strong>. Debes confirmarlo antes de iniciar sesión.
-        </Alerta>
-      ) : (
-        errorGeneral &&
-        errorGeneral.codigo !== 'DATOS_INVALIDOS' && <Alerta tipo="error">{errorGeneral.message}</Alerta>
+      {errorGeneral && errorGeneral.codigo !== 'DATOS_INVALIDOS' && (
+        <Alerta tipo="error">{errorGeneral.message}</Alerta>
       )}
 
       <form className="formulario" onSubmit={enviar} noValidate>
