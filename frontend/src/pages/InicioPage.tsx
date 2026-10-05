@@ -9,6 +9,7 @@ import { Cargando } from '../components/Cargando';
 import { Portafolio } from '../components/feria/Portafolio';
 import { SelectorItems } from '../components/feria/SelectorItems';
 import { Sugerencias } from '../components/feria/Sugerencias';
+import { useNotificar } from '../components/Notificaciones';
 import { useEvento } from '../hooks/useEvento';
 import { calcularDescuentos } from '../utils/descuentos';
 import { aFechaHoraIso, diasDelEvento, horariosDelEvento, quetzales } from '../utils/formato';
@@ -21,6 +22,7 @@ type Carga =
 /** Página principal con sesión: formulario de confirmación o, si ya confirmó, su portafolio. */
 export function InicioPage() {
   const { evento, cargando: cargandoEvento } = useEvento();
+  const notificar = useNotificar();
   const [carga, setCarga] = useState<Carga>({ estado: 'cargando' });
   const [recienConfirmado, setRecienConfirmado] = useState(false);
 
@@ -79,6 +81,11 @@ export function InicioPage() {
         setRecienConfirmado(true);
         setCarga({ estado: 'listo', items: carga.items, confirmacion });
         window.scrollTo({ top: 0, behavior: 'smooth' });
+        notificar({
+          tipo: 'exito',
+          titulo: '¡Asistencia confirmada!',
+          mensaje: 'Tu portafolio de promociones está listo.',
+        });
       }}
       onRecargar={cargar}
     />
