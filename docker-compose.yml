@@ -36,12 +36,32 @@ services:
       postgres:
         condition: service_healthy
 
+  feria-service:
+    build: ./services/feria-service
+    env_file: ./services/feria-service/.env
+    environment:
+      DATABASE_URL: postgresql://disagro:disagro@postgres:5432/disagro?schema=feria
+      NODE_ENV: development
+    ports:
+      - "4002:4002"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4002/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   frontend:
     build: ./frontend
     ports:
       - "8080:80"
     depends_on:
       auth-service:
+        condition: service_healthy
+      feria-service:
         condition: service_healthy
 
 volumes:

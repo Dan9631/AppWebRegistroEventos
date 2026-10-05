@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { Link, Outlet, useNavigate } from 'react-router';
 import { useAuth } from '../auth/AuthContext';
+import { useEvento } from '../hooks/useEvento';
 
 export function Layout() {
   const { estado, usuario, logout } = useAuth();
+  const { evento } = useEvento();
+  const telefono = evento?.telefonoAtencion ?? '2223-2425';
   const navigate = useNavigate();
   const [saliendo, setSaliendo] = useState(false);
 
@@ -23,7 +26,9 @@ export function Layout() {
         <div className="encabezado__contenido">
           <Link to="/" className="marca">
             <span className="marca__nombre">Disagro</span>
-            <span className="marca__evento">Feria de Promociones</span>
+            <span className="marca__evento">
+              {evento ? `${evento.nombre} - ${evento.anio}` : 'Feria de Promociones'}
+            </span>
           </Link>
 
           {estado === 'autenticado' && usuario && (
@@ -50,7 +55,7 @@ export function Layout() {
         <div className="pie__contenido">
           <span>© {new Date().getFullYear()} Disagro</span>
           <span>
-            Atención al cliente: <a href="tel:22232425">2223-2425</a>
+            Atención al cliente: <a href={`tel:${telefono.replace(/\D/g, '')}`}>{telefono}</a>
           </span>
         </div>
       </footer>

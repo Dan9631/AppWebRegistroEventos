@@ -1,4 +1,4 @@
-import { InputHTMLAttributes, ReactNode, useId, useState } from 'react';
+import { InputHTMLAttributes, ReactNode, SelectHTMLAttributes, useId, useState } from 'react';
 
 interface CampoProps extends InputHTMLAttributes<HTMLInputElement> {
   etiqueta: string;
@@ -57,6 +57,43 @@ export function CampoPassword({ etiqueta, error, ayuda, ...input }: CampoPasswor
           {visible ? 'Ocultar' : 'Mostrar'}
         </button>
       </div>
+      <MensajesCampo id={id} error={error} ayuda={ayuda} />
+    </div>
+  );
+}
+
+interface CampoSelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
+  etiqueta: string;
+  error?: string;
+  ayuda?: ReactNode;
+  opciones: { valor: string; etiqueta: string }[];
+  placeholder: string;
+}
+
+export function CampoSelect({ etiqueta, error, ayuda, opciones, placeholder, ...select }: CampoSelectProps) {
+  const id = useId();
+
+  return (
+    <div className="campo">
+      <label htmlFor={id} className="campo__etiqueta">
+        {etiqueta}
+      </label>
+      <select
+        id={id}
+        className={`campo__input campo__select${error ? ' campo__input--error' : ''}`}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={describedBy(id, error, ayuda)}
+        {...select}
+      >
+        <option value="" disabled>
+          {placeholder}
+        </option>
+        {opciones.map((opcion) => (
+          <option key={opcion.valor} value={opcion.valor}>
+            {opcion.etiqueta}
+          </option>
+        ))}
+      </select>
       <MensajesCampo id={id} error={error} ayuda={ayuda} />
     </div>
   );
