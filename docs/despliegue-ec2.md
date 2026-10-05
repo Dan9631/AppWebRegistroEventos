@@ -59,19 +59,14 @@ ssh -i disagro.pem ubuntu@<IP-ELASTICA>
 
 ## 3. Obtener el código
 
-El repositorio es privado. Dos opciones:
-
-- **Hacerlo público** (de todos modos hay que compartirlo con los evaluadores) y clonar:
-  ```bash
-  git clone https://github.com/Dan9631/AppWebRegistroEventos.git disagro
-  ```
-- **Mantenerlo privado** con un *fine-grained token* de GitHub (Settings → Developer settings →
-  Personal access tokens) con permiso de solo lectura sobre *Contents* de este repositorio.
-  `git clone` pedirá usuario y, como contraseña, el token.
-
 ```bash
+git clone https://github.com/Dan9631/AppWebRegistroEventos.git disagro
 cd disagro
 ```
+
+Si el repositorio fuera privado, `git clone` pedirá usuario y, como contraseña, un
+*fine-grained token* de GitHub (Settings → Developer settings → Personal access tokens) con
+permiso de solo lectura sobre *Contents* del repositorio.
 
 ## 4. Instalar y desplegar
 
