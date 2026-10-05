@@ -3,10 +3,12 @@ import { Link, Outlet, useNavigate } from 'react-router';
 import { useAuth } from '../auth/AuthContext';
 import { useEvento } from '../hooks/useEvento';
 import { AvisoVerificacion } from './AvisoVerificacion';
+import { useNotificar } from './Notificaciones';
 
 export function Layout() {
   const { estado, usuario, logout } = useAuth();
   const { evento } = useEvento();
+  const notificar = useNotificar();
   const telefono = evento?.telefonoAtencion ?? '2223-2425';
   const navigate = useNavigate();
   const [saliendo, setSaliendo] = useState(false);
@@ -18,6 +20,7 @@ export function Layout() {
     } finally {
       setSaliendo(false);
       navigate('/login', { replace: true });
+      notificar({ tipo: 'info', titulo: 'Sesión cerrada', mensaje: '¡Te esperamos en la feria!', duracionMs: 3500 });
     }
   }
 

@@ -2,14 +2,15 @@ import { useEffect, useState } from 'react';
 import { ApiError } from '../api/client';
 import { authApi } from '../api/auth.api';
 import { Boton } from './Boton';
+import { useNotificar } from './Notificaciones';
 
 const ESPERA_SEGUNDOS = 60;
 
 /** Botón para reenviar el correo de confirmación, con espera entre envíos. */
 export function ReenviarCorreo({ email, variante = 'secundario' }: { email: string; variante?: 'secundario' | 'texto' }) {
+  const notificar = useNotificar();
   const [enviando, setEnviando] = useState(false);
   const [espera, setEspera] = useState(0);
-  const [mensaje, setMensaje] = useState<{ tipo: 'exito' | 'error'; texto: string } | null>(null);
 
   useEffect(() => {
     if (espera <= 0) return;
@@ -19,15 +20,19 @@ export function ReenviarCorreo({ email, variante = 'secundario' }: { email: stri
 
   async function reenviar() {
     setEnviando(true);
-    setMensaje(null);
     try {
       await authApi.reenviarVerificacion(email);
-      setMensaje({ tipo: 'exito', texto: 'Te enviamos un nuevo correo. Revisa también la carpeta de spam.' });
+      notificar({
+        tipo: 'exito',
+        titulo: 'Correo enviado',
+        mensaje: `Revisa la bandeja de ${email} y también la carpeta de spam.`,
+      });
       setEspera(ESPERA_SEGUNDOS);
     } catch (error) {
-      setMensaje({
+      notificar({
         tipo: 'error',
-        texto: error instanceof ApiError ? error.message : 'No se pudo reenviar el correo',
+        titulo: 'No se pudo reenviar',
+        mensaje: error instanceof ApiError ? error.message : 'Intenta de nuevo en unos minutos.',
       });
     } finally {
       setEnviando(false);
@@ -46,11 +51,6 @@ export function ReenviarCorreo({ email, variante = 'secundario' }: { email: stri
       >
         {espera > 0 ? `Reenviar en ${espera}s` : 'Reenviar correo de confirmación'}
       </Boton>
-      {mensaje && (
-        <p className={`reenviar__mensaje reenviar__mensaje--${mensaje.tipo}`} role="status">
-          {mensaje.texto}
-        </p>
-      )}
     </div>
   );
 }
