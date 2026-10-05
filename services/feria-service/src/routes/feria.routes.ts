@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { feriaController } from '../controllers/feria.controller';
 import { confirmacionDto } from '../dtos/feria.dto';
-import { requiereAuth, requiereTipo } from '../middlewares/auth.middleware';
+import { requiereAuth, requiereEmailVerificado, requiereTipo } from '../middlewares/auth.middleware';
 import { validarBody } from '../middlewares/validar.middleware';
 
 export const feriaRoutes = Router();
@@ -16,6 +16,7 @@ feriaRoutes.post(
   '/confirmaciones',
   requiereAuth,
   requiereTipo('CLIENTE'),
+  requiereEmailVerificado,
   validarBody(confirmacionDto),
   feriaController.confirmar,
 );

@@ -52,8 +52,9 @@ export const openApiDocument = {
     description: [
       'Servicio de autenticación de la plataforma de la Feria de Promociones.',
       '',
-      '**Flujo:** registro → confirmación por correo → login → uso del access token → refresh / logout.',
+      '**Flujo:** registro → login → confirmación por correo → uso del access token → refresh / logout.',
       '',
+      '- Se puede iniciar sesión sin haber confirmado el correo. El access token incluye `emailVerificado` y cada servicio restringe lo que corresponda; tras confirmar, `/auth/refresh` emite un token actualizado.',
       '- El **access token** (JWT RS256, 15 min) se envía en `Authorization: Bearer <token>`.',
       '- El **refresh token** (7 días) viaja en una cookie httpOnly y rota en cada uso; reutilizar uno ya rotado cierra todas las sesiones del usuario.',
       '- Todas las respuestas de error tienen el formato `{ error: { codigo, mensaje, detalles? } }`.',
@@ -136,12 +137,13 @@ export const openApiDocument = {
       post: {
         tags: ['Sesión'],
         summary: 'Iniciar sesión',
+        description: 'Permitido aunque el correo no esté confirmado: revise `usuario.emailVerificado` en la respuesta.',
         requestBody: cuerpoJson('LoginRequest', { email: 'maria@ejemplo.com', password: 'secreta123' }),
         responses: {
           200: respuestaSesion,
           400: errorDatosInvalidos,
           401: respuestaError('Email o contraseña incorrectos', 'CREDENCIALES_INVALIDAS'),
-          403: respuestaError('Cuenta no habilitada para iniciar sesión', 'EMAIL_NO_VERIFICADO', 'USUARIO_INACTIVO'),
+          403: respuestaError('La cuenta está deshabilitada', 'USUARIO_INACTIVO'),
           429: errorDemasiadas,
         },
       },
@@ -220,7 +222,7 @@ export const openApiDocument = {
       Sesion: {
         type: 'object',
         properties: {
-          accessToken: { type: 'string', description: 'JWT RS256 con `sub`, `tipo` y `email`' },
+          accessToken: { type: 'string', description: 'JWT RS256 con `sub`, `tipo`, `email` y `emailVerificado`' },
           usuario: { $ref: '#/components/schemas/Usuario' },
         },
       },

@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { ApiError } from '../api/client';
 import { authApi } from '../api/auth.api';
+import { useAuth } from '../auth/AuthContext';
 import { Boton } from '../components/Boton';
 import { Campo } from '../components/Campo';
 import { Cargando } from '../components/Cargando';
@@ -13,6 +14,7 @@ type Estado = { tipo: 'verificando' } | { tipo: 'exito' } | { tipo: 'error'; cod
 /** Destino del enlace enviado por correo: /verificar?token=... */
 export function VerificarPage() {
   const [params] = useSearchParams();
+  const { estado: sesion, actualizarSesion } = useAuth();
   const token = params.get('token');
   const [estado, setEstado] = useState<Estado>(
     token
@@ -40,6 +42,11 @@ export function VerificarPage() {
       );
   }, [token]);
 
+  // Si el cliente tiene la sesión abierta, su token aún dice "sin confirmar": se renueva.
+  useEffect(() => {
+    if (estado.tipo === 'exito' && sesion === 'autenticado') actualizarSesion();
+  }, [estado.tipo, sesion, actualizarSesion]);
+
   if (estado.tipo === 'verificando') {
     return (
       <div className="centrado">
@@ -58,10 +65,16 @@ export function VerificarPage() {
             </svg>
           </div>
           <h1 className="tarjeta__titulo">¡Correo confirmado!</h1>
-          <p className="tarjeta__subtitulo">Tu cuenta está activa. Ya puedes iniciar sesión y confirmar tu asistencia.</p>
-          <Link to="/login" className="boton boton--primario boton--bloque">
-            <span>Iniciar sesión</span>
-          </Link>
+          <p className="tarjeta__subtitulo">Tu cuenta está activa. Ya puedes confirmar tu asistencia a la feria.</p>
+          {sesion === 'autenticado' ? (
+            <Link to="/" className="boton boton--primario boton--bloque">
+              <span>Ir a la feria</span>
+            </Link>
+          ) : (
+            <Link to="/login" className="boton boton--primario boton--bloque">
+              <span>Iniciar sesión</span>
+            </Link>
+          )}
         </section>
       </div>
     );

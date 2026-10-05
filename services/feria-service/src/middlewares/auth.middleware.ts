@@ -8,6 +8,7 @@ export interface UsuarioToken {
   sub: string;
   tipo: string;
   email: string;
+  emailVerificado?: boolean;
 }
 
 declare global {
@@ -47,4 +48,15 @@ export function requiereTipo(...tipos: string[]) {
     }
     next();
   };
+}
+
+/**
+ * Solo cuentas con el correo confirmado. Usar después de requiereAuth.
+ * Un token sin el dato (emitido antes de existir) se trata como no confirmado.
+ */
+export function requiereEmailVerificado(req: Request, _res: Response, next: NextFunction) {
+  if (req.usuario?.emailVerificado !== true) {
+    throw new AppError(403, 'EMAIL_NO_VERIFICADO', 'Debe confirmar su correo antes de confirmar su asistencia');
+  }
+  next();
 }

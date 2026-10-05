@@ -155,6 +155,58 @@ a:hover {
   background: rgb(255 255 255 / 0.1);
 }
 
+/* Aviso de correo sin confirmar, bajo el encabezado */
+.aviso-verificacion {
+  background: #fff6e0;
+  border-bottom: 1px solid #f0d58c;
+}
+
+.aviso-verificacion__contenido {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+  flex-wrap: wrap;
+}
+
+.aviso-verificacion__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.95rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.aviso-verificacion__pendiente {
+  color: #8a5a00;
+  font-weight: 600;
+}
+
+.aviso-verificacion__acciones {
+  display: flex;
+  align-items: center;
+  gap: 8px 16px;
+  flex-wrap: wrap;
+}
+
+.aviso-verificacion__acciones .boton--secundario {
+  padding: 8px 16px;
+}
+
+.aviso-verificacion .reenviar {
+  gap: 2px;
+}
+
+.feria__bloqueo {
+  color: #8a5a00;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
 .pie {
   background: var(--color-encabezado);
   color: var(--color-encabezado-texto);
@@ -1132,6 +1184,10 @@ a:hover {
   .encabezado__contenido,
   .pie__contenido {
     padding: 0 16px;
+  }
+
+  .aviso-verificacion__contenido {
+    padding: 12px 16px;
   }
 
   .marca__nombre {
